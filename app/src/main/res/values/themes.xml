@@ -1,0 +1,3 @@
+<resources>
+    <style name="Theme.AliveLine" parent="android:Theme.Material.NoActionBar" />
+</resources>
