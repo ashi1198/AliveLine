@@ -50,6 +50,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aliveline.app.audio.LocalSoundPlayer
+import com.aliveline.app.audio.Sfx
 import com.aliveline.app.domain.model.BotType
 import com.aliveline.app.ui.BotAvatar
 import com.aliveline.app.ui.BotState
@@ -73,17 +75,21 @@ fun ConnectBotScreen(bot: BotType, onConnected: () -> Unit, onSkip: () -> Unit) 
     }
 }
 
+@Suppress("UnusedBoxWithConstraintsScope")
 @Composable
+
 private fun PlugStage(bot: BotType, onConnected: () -> Unit, modifier: Modifier = Modifier) {
     val accent = bot.palette().base
     val density = LocalDensity.current
     val haptics = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val currentOnConnected by rememberUpdatedState(onConnected)
-
+    val sound = LocalSoundPlayer.current
     BoxWithConstraints(modifier) {
-        val w = with(density) { maxWidth.toPx() }
-        val h = with(density) { maxHeight.toPx() }
+        val boxWidth = maxWidth
+        val boxHeight = maxHeight
+        val w = with(density) { boxWidth.toPx() }
+        val h = with(density) { boxHeight.toPx() }
         val plugWpx = with(density) { StageDims.PlugW.toPx() }
         val plugHpx = with(density) { StageDims.PlugH.toPx() }
         val socketR = with(density) { StageDims.SocketR.toPx() }
@@ -158,6 +164,7 @@ private fun PlugStage(bot: BotType, onConnected: () -> Unit, modifier: Modifier 
                 .pointerInput(connecting) {
                     if (connecting) return@pointerInput
                     detectDragGestures(
+                        onDragStart = { sound?.play(Sfx.PICKUP) },
                         onDrag = { change, drag ->
                             change.consume()
                             scope.launch { plugPos.snapTo(plugPos.value + drag) }
@@ -166,6 +173,7 @@ private fun PlugStage(bot: BotType, onConnected: () -> Unit, modifier: Modifier 
                             scope.launch {
                                 if ((plugPos.value - target).getDistance() < snapRadius) {
                                     connecting = true
+                                    sound?.play(Sfx.SNAP)
                                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                                     plugPos.animateTo(target, spring(stiffness = Spring.StiffnessMedium))
                                     glow.animateTo(1f, tween(350))

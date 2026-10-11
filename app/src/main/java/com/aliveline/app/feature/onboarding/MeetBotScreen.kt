@@ -33,6 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aliveline.app.audio.LocalSoundPlayer
+import com.aliveline.app.audio.Sfx
 import com.aliveline.app.domain.model.BotType
 import com.aliveline.app.ui.BotAvatar
 import com.aliveline.app.ui.BotState
@@ -45,6 +47,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun MeetBotScreen(bot: BotType, onContinue: () -> Unit) {
     val accent = bot.palette().base
+    val sound = LocalSoundPlayer.current
     var awake by remember { mutableStateOf(false) }
     var botState by remember { mutableStateOf(BotState.SLEEPY) }
 
@@ -52,6 +55,7 @@ fun MeetBotScreen(bot: BotType, onContinue: () -> Unit) {
     LaunchedEffect(bot) {
         delay(350)
         awake = true
+        sound?.play(Sfx.WAKE)
         botState = BotState.EXCITED
         delay(1300)
         botState = BotState.WAVING

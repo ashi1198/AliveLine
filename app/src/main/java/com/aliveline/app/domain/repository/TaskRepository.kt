@@ -1,2 +1,13 @@
 package com.aliveline.app.domain.repository
 
+import com.aliveline.app.domain.model.Task
+import kotlinx.coroutines.flow.Flow
+
+interface TaskRepository {
+    fun observeTasks(): Flow<List<Task>>
+    fun observeTask(id: Long): Flow<Task?>
+    suspend fun addTask(task: Task): Long
+    suspend fun setTaskCompletedAt(id: Long, completedAt: Long?)
+    suspend fun setSubtaskDone(subtaskId: Long, done: Boolean)
+    suspend fun deleteTask(id: Long)
+}

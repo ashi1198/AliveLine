@@ -59,7 +59,11 @@ class DataStoreOnboardingRepository @Inject constructor(
     }
 
     override suspend fun reset() {
-        store.edit { it.clear() }
+        store.edit {
+            it.remove(Keys.WELCOME_SEEN)
+            it.remove(Keys.CONNECTED)
+            it.remove(Keys.INTRODUCED)
+        }
     }
 }
 
