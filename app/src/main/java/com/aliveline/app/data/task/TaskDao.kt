@@ -33,6 +33,9 @@ abstract class TaskDao {
     @Query("UPDATE tasks SET completedAt = :completedAt WHERE id = :id")
     abstract suspend fun setCompletedAt(id: Long, completedAt: Long?)
 
+    @Query("UPDATE tasks SET startMinute = :startMinute, durationMin = :durationMin WHERE id = :id")
+    abstract suspend fun setSchedule(id: Long, startMinute: Int?, durationMin: Int?)
+
     @Query("UPDATE subtasks SET done = :done WHERE id = :id")
     abstract suspend fun setSubtaskDone(id: Long, done: Boolean)
 

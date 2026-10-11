@@ -1,5 +1,7 @@
 package com.aliveline.app.feature.bot
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -7,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,9 +20,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,9 +37,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aliveline.app.domain.model.BotType
+import com.aliveline.app.feature.focus.StartFocusDialog
+import com.aliveline.app.feature.focus.StartFocusRequest
 import com.aliveline.app.ui.BotAvatar
 import com.aliveline.app.ui.components.EmptyHint
 import com.aliveline.app.ui.components.SectionTitle
+import com.aliveline.app.ui.components.SpeechBubble
 import com.aliveline.app.ui.components.TaskCard
 import com.aliveline.app.ui.conditionMessage
 import com.aliveline.app.ui.displayName
@@ -45,10 +55,23 @@ fun BotDetailScreen(
     onBack: () -> Unit,
     onTaskClick: (Long) -> Unit,
     onAddTask: (BotType) -> Unit,
+    onFocusStarted: () -> Unit,
     viewModel: BotDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val accent = state.bot.palette().base
+    var focusRequest by remember { mutableStateOf<StartFocusRequest?>(null) }
+
+    focusRequest?.let { request ->
+        StartFocusDialog(
+            request = request,
+            onDismiss = { focusRequest = null },
+            onStarted = {
+                focusRequest = null
+                onFocusStarted()
+            },
+        )
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -71,7 +94,25 @@ fun BotDetailScreen(
 
         item(key = "hero") {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                BotAvatar(state.bot, state.botState, Modifier.size(200.dp))
+                if (state.chatter.isNotEmpty()) {
+                    SpeechBubble(
+                        text = state.chatter,
+                        accent = accent,
+                        tailAtBottom = true,
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                    )
+                }
+                BotAvatar(
+                    type = state.bot,
+                    state = state.botState,
+                    modifier = Modifier
+                        .size(200.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = viewModel::onBotTapped,
+                        ),
+                )
                 Text(state.condition.label, color = accent, fontWeight = FontWeight.SemiBold)
                 Text(
                     state.bot.conditionMessage(state.condition),
@@ -88,6 +129,21 @@ fun BotDetailScreen(
                 shape = RoundedCornerShape(18.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = accent, contentColor = Color.White),
             ) { Text("+ Add a task for ${state.bot.displayName}") }
+        }
+
+        item(key = "focus") {
+            OutlinedButton(
+                onClick = {
+                    focusRequest = StartFocusRequest(
+                        taskId = null,
+                        title = "Focus session",
+                        bot = state.bot,
+                        suggestedMinutes = null,
+                    )
+                },
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape = RoundedCornerShape(18.dp),
+            ) { Text("Start a focus session", color = accent) }
         }
 
         item(key = "todos_title") { SectionTitle("Needs") }

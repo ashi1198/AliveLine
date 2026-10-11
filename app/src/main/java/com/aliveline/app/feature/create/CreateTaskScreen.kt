@@ -20,11 +20,15 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -34,9 +38,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aliveline.app.audio.LocalSoundPlayer
 import com.aliveline.app.audio.Sfx
+import com.aliveline.app.domain.TimeFormat
 import com.aliveline.app.domain.model.BotType
 import com.aliveline.app.domain.model.Repeat
 import com.aliveline.app.domain.model.TaskKind
+import com.aliveline.app.ui.components.TimePickerDialog
 import com.aliveline.app.ui.displayName
 import com.aliveline.app.ui.theme.AliveColors
 
@@ -47,6 +53,8 @@ fun CreateTaskScreen(
 ) {
     val s by viewModel.state.collectAsStateWithLifecycle()
     val sound = LocalSoundPlayer.current
+    var showTimePicker by remember { mutableStateOf(false) }
+
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onClose) {
@@ -125,6 +133,28 @@ fun CreateTaskScreen(
                 }
             }
 
+            FieldLabel("Time on the Daily Map (optional)")
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { showTimePicker = true }) {
+                    Text(s.startMinute?.let { TimeFormat.minuteOfDay(it) } ?: "Pick a time")
+                }
+                if (s.startMinute != null) {
+                    TextButton(onClick = { viewModel.onStartMinuteChange(null) }) { Text("Clear") }
+                }
+            }
+            if (s.startMinute != null) {
+                FieldLabel("Duration")
+                ChipRow {
+                    listOf(15, 30, 45, 60, 90, 120, 180).forEach { minutes ->
+                        FilterChip(
+                            selected = s.durationMin == minutes,
+                            onClick = { viewModel.onDurationChange(minutes) },
+                            label = { Text(TimeFormat.durationLabel(minutes)) },
+                        )
+                    }
+                }
+            }
+
             FieldLabel("Subtasks")
             s.subtasks.forEachIndexed { index, text ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -158,6 +188,17 @@ fun CreateTaskScreen(
             colors = ButtonDefaults.buttonColors(containerColor = AliveColors.Primary),
         ) { Text("Save task", fontSize = 16.sp) }
         Spacer(Modifier.height(16.dp))
+    }
+
+    if (showTimePicker) {
+        TimePickerDialog(
+            initialMinute = s.startMinute ?: (9 * 60),
+            onConfirm = {
+                viewModel.onStartMinuteChange(it)
+                showTimePicker = false
+            },
+            onDismiss = { showTimePicker = false },
+        )
     }
 }
 

@@ -7,6 +7,8 @@ object Routes {
     const val MAP = "map"
     const val NOTES = "notes"
     const val REMINDERS = "reminders"
+    const val ACHIEVEMENTS = "achievements"
+    const val FOCUS = "focus"
 
     const val BOT_PATTERN = "bot/{botType}"
     const val TASK_PATTERN = "task/{taskId}"

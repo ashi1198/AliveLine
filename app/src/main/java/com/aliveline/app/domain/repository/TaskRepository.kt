@@ -8,6 +8,7 @@ interface TaskRepository {
     fun observeTask(id: Long): Flow<Task?>
     suspend fun addTask(task: Task): Long
     suspend fun setTaskCompletedAt(id: Long, completedAt: Long?)
+    suspend fun setSchedule(id: Long, startMinute: Int?, durationMin: Int?)
     suspend fun setSubtaskDone(subtaskId: Long, done: Boolean)
     suspend fun deleteTask(id: Long)
 }

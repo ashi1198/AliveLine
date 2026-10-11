@@ -24,6 +24,9 @@ class RoomTaskRepository @Inject constructor(
     override suspend fun setTaskCompletedAt(id: Long, completedAt: Long?) =
         dao.setCompletedAt(id, completedAt)
 
+    override suspend fun setSchedule(id: Long, startMinute: Int?, durationMin: Int?) =
+        dao.setSchedule(id, startMinute, durationMin)
+
     override suspend fun setSubtaskDone(subtaskId: Long, done: Boolean) =
         dao.setSubtaskDone(subtaskId, done)
 

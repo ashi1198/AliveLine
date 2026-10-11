@@ -42,11 +42,15 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.animation:animation")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // Lifecycle / ViewModel
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
+
+    // Navigation
+    implementation("androidx.navigation:navigation-compose:2.7.7")
 
     // Hilt (dependency injection)
     implementation("com.google.dagger:hilt-android:2.51.1")
@@ -56,14 +60,11 @@ dependencies {
     // DataStore (small key-value persistence)
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
-    // Tests
-    testImplementation("junit:junit:4.13.2")
-    // Navigation
-    implementation("androidx.navigation:navigation-compose:2.7.7")
-
     // Room (local database)
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
-    implementation("androidx.compose.material:material-icons-extended")
+
+    // Tests
+    testImplementation("junit:junit:4.13.2")
 }

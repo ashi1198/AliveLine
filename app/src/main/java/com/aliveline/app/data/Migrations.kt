@@ -28,3 +28,11 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         db.execSQL("ALTER TABLE `notes` ADD COLUMN `color` TEXT NOT NULL DEFAULT 'DEFAULT'")
     }
 }
+
+/** v3 -> v4: tasks can be placed on the Daily Map (start time + duration). Both are optional. */
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `startMinute` INTEGER")
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `durationMin` INTEGER")
+    }
+}

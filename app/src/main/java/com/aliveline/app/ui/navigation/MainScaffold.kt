@@ -2,8 +2,10 @@ package com.aliveline.app.ui.navigation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -39,9 +41,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.aliveline.app.audio.LocalSoundPlayer
 import com.aliveline.app.audio.Sfx
+import com.aliveline.app.feature.achievements.AchievementsScreen
 import com.aliveline.app.feature.bot.BotDetailScreen
+import com.aliveline.app.feature.celebration.CelebrationLayer
 import com.aliveline.app.feature.create.CreateTaskScreen
+import com.aliveline.app.feature.focus.FocusMiniBar
+import com.aliveline.app.feature.focus.FocusScreen
 import com.aliveline.app.feature.home.HomeScreen
+import com.aliveline.app.feature.map.MapScreen
 import com.aliveline.app.feature.notes.NoteEditorScreen
 import com.aliveline.app.feature.notes.NotesScreen
 import com.aliveline.app.feature.task.TaskDetailScreen
@@ -74,83 +81,106 @@ fun MainScaffold(onReplayOnboarding: () -> Unit) {
         }
     }
 
-    Scaffold(
-        containerColor = AliveColors.Background,
-        contentColor = AliveColors.TextPrimary,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        bottomBar = { if (showBottomBar) AliveBottomBar(currentRoute, navController) },
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Routes.HOME,
-            modifier = Modifier.padding(innerPadding),
-        ) {
-            composable(Routes.HOME) {
-                HomeScreen(
-                    onBotClick = { navController.navigate(Routes.bot(it)) },
-                    onTaskClick = { navController.navigate(Routes.task(it)) },
-                )
-            }
-            composable(Routes.MAP) {
-                PlaceholderScreen("Daily Map", "Your day as a timeline. Coming soon.")
-            }
-            composable(Routes.NOTES) {
-                NotesScreen(
-                    onNoteClick = { navController.navigate(Routes.note(id = it)) },
-                    onNewNote = { navController.navigate(Routes.note()) },
-                )
-            }
-            composable(Routes.REMINDERS) {
-                RemindersScreen(onReplayOnboarding)
-            }
-            composable(
-                Routes.BOT_PATTERN,
-                arguments = listOf(navArgument("botType") { type = NavType.StringType }),
+    Box(Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = AliveColors.Background,
+            contentColor = AliveColors.TextPrimary,
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            bottomBar = {
+                Column {
+                    if (showBottomBar) {
+                        FocusMiniBar(onClick = { navController.navigate(Routes.FOCUS) })
+                        AliveBottomBar(currentRoute, navController)
+                    }
+                }
+            },
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = Routes.HOME,
+                modifier = Modifier.padding(innerPadding),
             ) {
-                BotDetailScreen(
-                    onBack = { navController.popBackStack() },
-                    onTaskClick = { navController.navigate(Routes.task(it)) },
-                    onAddTask = { navController.navigate(Routes.create(it)) },
-                )
-            }
-            composable(
-                Routes.TASK_PATTERN,
-                arguments = listOf(navArgument("taskId") { type = NavType.LongType }),
-            ) {
-                TaskDetailScreen(
-                    onBack = { navController.popBackStack() },
-                    onOpenNote = { navController.navigate(Routes.note(id = it)) },
-                    onAddNote = { taskId -> navController.navigate(Routes.note(taskId = taskId)) },
-                )
-            }
-            composable(
-                Routes.CREATE_PATTERN,
-                arguments = listOf(
-                    navArgument("bot") {
-                        type = NavType.StringType
-                        nullable = true
-                        defaultValue = null
-                    },
-                ),
-            ) {
-                CreateTaskScreen(onClose = { navController.popBackStack() })
-            }
-            composable(
-                Routes.NOTE_PATTERN,
-                arguments = listOf(
-                    navArgument("id") {
-                        type = NavType.LongType
-                        defaultValue = -1L
-                    },
-                    navArgument("taskId") {
-                        type = NavType.LongType
-                        defaultValue = -1L
-                    },
-                ),
-            ) {
-                NoteEditorScreen(onClose = { navController.popBackStack() })
+                composable(Routes.HOME) {
+                    HomeScreen(
+                        onBotClick = { navController.navigate(Routes.bot(it)) },
+                        onTaskClick = { navController.navigate(Routes.task(it)) },
+                        onOpenAchievements = { navController.navigate(Routes.ACHIEVEMENTS) },
+                    )
+                }
+                composable(Routes.MAP) {
+                    MapScreen(
+                        onTaskClick = { navController.navigate(Routes.task(it)) },
+                        onFocusStarted = { navController.navigate(Routes.FOCUS) },
+                    )
+                }
+                composable(Routes.NOTES) {
+                    NotesScreen(
+                        onNoteClick = { navController.navigate(Routes.note(id = it)) },
+                        onNewNote = { navController.navigate(Routes.note()) },
+                    )
+                }
+                composable(Routes.REMINDERS) {
+                    RemindersScreen(onReplayOnboarding)
+                }
+                composable(Routes.ACHIEVEMENTS) {
+                    AchievementsScreen(onBack = { navController.popBackStack() })
+                }
+                composable(Routes.FOCUS) {
+                    FocusScreen(onClose = { navController.popBackStack() })
+                }
+                composable(
+                    Routes.BOT_PATTERN,
+                    arguments = listOf(navArgument("botType") { type = NavType.StringType }),
+                ) {
+                    BotDetailScreen(
+                        onBack = { navController.popBackStack() },
+                        onTaskClick = { navController.navigate(Routes.task(it)) },
+                        onAddTask = { navController.navigate(Routes.create(it)) },
+                        onFocusStarted = { navController.navigate(Routes.FOCUS) },
+                    )
+                }
+                composable(
+                    Routes.TASK_PATTERN,
+                    arguments = listOf(navArgument("taskId") { type = NavType.LongType }),
+                ) {
+                    TaskDetailScreen(
+                        onBack = { navController.popBackStack() },
+                        onOpenNote = { navController.navigate(Routes.note(id = it)) },
+                        onAddNote = { taskId -> navController.navigate(Routes.note(taskId = taskId)) },
+                    )
+                }
+                composable(
+                    Routes.CREATE_PATTERN,
+                    arguments = listOf(
+                        navArgument("bot") {
+                            type = NavType.StringType
+                            nullable = true
+                            defaultValue = null
+                        },
+                    ),
+                ) {
+                    CreateTaskScreen(onClose = { navController.popBackStack() })
+                }
+                composable(
+                    Routes.NOTE_PATTERN,
+                    arguments = listOf(
+                        navArgument("id") {
+                            type = NavType.LongType
+                            defaultValue = -1L
+                        },
+                        navArgument("taskId") {
+                            type = NavType.LongType
+                            defaultValue = -1L
+                        },
+                    ),
+                ) {
+                    NoteEditorScreen(onClose = { navController.popBackStack() })
+                }
             }
         }
+
+        // Confetti and achievement banners float above every screen.
+        CelebrationLayer()
     }
 }
 

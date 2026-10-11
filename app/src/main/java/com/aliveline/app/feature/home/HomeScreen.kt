@@ -18,6 +18,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +39,7 @@ import com.aliveline.app.ui.BotAvatar
 import com.aliveline.app.ui.TaskItem
 import com.aliveline.app.ui.components.EmptyHint
 import com.aliveline.app.ui.components.SectionTitle
+import com.aliveline.app.ui.components.SpeechBubble
 import com.aliveline.app.ui.components.TaskCard
 import com.aliveline.app.ui.displayName
 import com.aliveline.app.ui.label
@@ -45,6 +50,7 @@ import com.aliveline.app.ui.theme.AliveColors
 fun HomeScreen(
     onBotClick: (BotType) -> Unit,
     onTaskClick: (Long) -> Unit,
+    onOpenAchievements: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -55,14 +61,36 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item(key = "header") {
-            Column {
-                Text(
-                    state.greeting,
-                    color = AliveColors.TextPrimary,
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        state.greeting,
+                        color = AliveColors.TextPrimary,
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(state.dateLabel, color = AliveColors.TextSecondary)
+                }
+                IconButton(onClick = onOpenAchievements) {
+                    Icon(
+                        Icons.Default.EmojiEvents,
+                        contentDescription = "Achievements",
+                        tint = AliveColors.Primary,
+                    )
+                }
+            }
+        }
+
+        state.chatter?.let { chatter ->
+            item(key = "chatter") {
+                SpeechBubble(
+                    text = chatter.text,
+                    speaker = chatter.bot.displayName,
+                    accent = chatter.bot.palette().base,
+                    fillWidth = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = viewModel::onChatterTapped,
                 )
-                Text(state.dateLabel, color = AliveColors.TextSecondary)
             }
         }
 

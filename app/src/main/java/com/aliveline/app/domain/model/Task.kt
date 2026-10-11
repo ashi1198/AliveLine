@@ -20,5 +20,7 @@ data class Task(
     val dueAt: Long? = null,        // epoch millis (end of the due day)
     val completedAt: Long? = null,  // epoch millis of last completion
     val createdAt: Long = 0,
+    val startMinute: Int? = null,   // minutes after midnight, used by the Daily Map
+    val durationMin: Int? = null,   // length on the Daily Map
     val subtasks: List<Subtask> = emptyList(),
 )

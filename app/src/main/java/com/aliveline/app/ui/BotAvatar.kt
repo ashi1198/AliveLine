@@ -37,8 +37,7 @@ import kotlin.math.max
 import kotlin.random.Random
 import kotlinx.coroutines.delay
 
-enum class BotState { IDLE, HAPPY, EXCITED, THINKING, TIRED, SLEEPY, CELEBRATING, WAVING }
-
+enum class BotState { IDLE, HAPPY, EXCITED, THINKING, TIRED, SLEEPY, CELEBRATING, WAVING, FOCUSED }
 /** A pure data description of how a bot looks in a given state. */
 private class Look(
     val lid: Float,          // 0 = eyes open, 1 = closed
@@ -61,6 +60,7 @@ private fun BotState.look() = when (this) {
     BotState.SLEEPY -> Look(1f, 0f, 0f, 0f, 0.005f, 3200, zzz = true)
     BotState.CELEBRATING -> Look(0f, 1f, 1f, 0f, 0.10f, 320, sparkle = true)
     BotState.WAVING -> Look(0f, 0.9f, 0f, 0f, 0.02f, 900, wave = 1f)
+    BotState.FOCUSED -> Look(0.2f, 0.15f, 0f, 0.15f, 0.006f, 2600)
 }
 
 internal class Palette(val base: Color, val light: Color, val dark: Color)

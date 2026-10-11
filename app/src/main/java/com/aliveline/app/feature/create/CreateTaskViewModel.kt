@@ -34,6 +34,8 @@ data class CreateTaskUiState(
     val kind: TaskKind = TaskKind.ONE_TIME,
     val repeat: Repeat = Repeat.DAILY,
     val deadline: DeadlineOption = DeadlineOption.NONE,
+    val startMinute: Int? = null,
+    val durationMin: Int = 60,
     val subtasks: List<String> = emptyList(),
     val newSubtask: String = "",
 ) {
@@ -59,6 +61,8 @@ class CreateTaskViewModel @Inject constructor(
     fun onKindChange(v: TaskKind) = _state.update { it.copy(kind = v) }
     fun onRepeatChange(v: Repeat) = _state.update { it.copy(repeat = v) }
     fun onDeadlineChange(v: DeadlineOption) = _state.update { it.copy(deadline = v) }
+    fun onStartMinuteChange(v: Int?) = _state.update { it.copy(startMinute = v) }
+    fun onDurationChange(v: Int) = _state.update { it.copy(durationMin = v) }
     fun onNewSubtaskChange(v: String) = _state.update { it.copy(newSubtask = v) }
 
     fun onAddSubtask() = _state.update {
@@ -95,6 +99,8 @@ class CreateTaskViewModel @Inject constructor(
                     repeat = if (s.kind == TaskKind.ONE_TIME) Repeat.NONE else s.repeat,
                     dueAt = dueAt,
                     createdAt = System.currentTimeMillis(),
+                    startMinute = s.startMinute,
+                    durationMin = if (s.startMinute != null) s.durationMin else null,
                     subtasks = allSubtasks.map { Subtask(title = it) },
                 ),
             )

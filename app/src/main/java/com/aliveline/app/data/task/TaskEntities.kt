@@ -18,6 +18,8 @@ data class TaskEntity(
     val dueAt: Long?,
     val completedAt: Long?,
     val createdAt: Long,
+    val startMinute: Int? = null,
+    val durationMin: Int? = null,
 )
 
 @Entity(

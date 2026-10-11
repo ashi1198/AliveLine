@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.aliveline.app.data.AliveLineDatabase
 import com.aliveline.app.data.MIGRATION_1_2
 import com.aliveline.app.data.MIGRATION_2_3
+import com.aliveline.app.data.MIGRATION_3_4
 import com.aliveline.app.data.note.NoteDao
 import com.aliveline.app.data.task.TaskDao
 import dagger.Module
@@ -22,7 +23,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AliveLineDatabase =
         Room.databaseBuilder(context, AliveLineDatabase::class.java, "aliveline.db")
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .build()
 
     @Provides
