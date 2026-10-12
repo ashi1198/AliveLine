@@ -9,6 +9,7 @@ import com.aliveline.app.domain.model.BotType
 import com.aliveline.app.domain.model.Task
 import com.aliveline.app.domain.model.completedOn
 import com.aliveline.app.domain.model.currentTodos
+import com.aliveline.app.domain.repository.SettingsRepository
 import com.aliveline.app.domain.repository.TaskRepository
 import com.aliveline.app.ui.BotState
 import com.aliveline.app.ui.TaskItem
@@ -24,6 +25,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -53,14 +56,16 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repo: TaskRepository,
+    settings: SettingsRepository,
 ) : ViewModel() {
 
     private val celebrating = MutableStateFlow<BotType?>(null)
     private val chatterIndex = MutableStateFlow(0)
+    private val userName = settings.settings.map { it.userName }.distinctUntilChanged()
 
     val uiState: StateFlow<HomeUiState> =
-        combine(repo.observeTasks(), celebrating, chatterIndex) { tasks, celebratingBot, index ->
-            buildState(tasks, celebratingBot, index)
+        combine(repo.observeTasks(), celebrating, chatterIndex, userName) { tasks, celebratingBot, index, name ->
+            buildState(tasks, celebratingBot, index, name)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
     fun onCompleteClicked(taskId: Long, bot: BotType) {
@@ -77,16 +82,22 @@ class HomeViewModel @Inject constructor(
         chatterIndex.update { it + 1 }
     }
 
-    private fun buildState(tasks: List<Task>, celebratingBot: BotType?, chatterIdx: Int): HomeUiState {
+    private fun buildState(
+        tasks: List<Task>,
+        celebratingBot: BotType?,
+        chatterIdx: Int,
+        name: String,
+    ): HomeUiState {
         val zone = ZoneId.systemDefault()
         val now = LocalDateTime.now(zone)
         val today = now.toLocalDate()
 
-        val greeting = when {
+        val timeGreeting = when {
             now.hour < 12 -> "Good morning"
             now.hour < 17 -> "Good afternoon"
             else -> "Good evening"
         }
+        val greeting = if (name.isBlank()) timeGreeting else "$timeGreeting, ${name.trim()}"
 
         val bots = BotType.entries.map { bot ->
             val botTasks = tasks.filter { it.bot == bot }

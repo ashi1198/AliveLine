@@ -32,6 +32,7 @@ android {
 }
 
 dependencies {
+
     val composeBom = platform("androidx.compose:compose-bom:2024.09.00")
     implementation(composeBom)
     implementation("androidx.core:core-ktx:1.13.1")
@@ -59,7 +60,8 @@ dependencies {
 
     // DataStore (small key-value persistence)
     implementation("androidx.datastore:datastore-preferences:1.1.1")
-
+    // Home screen widget
+    implementation("androidx.glance:glance-appwidget:1.1.0")
     // Room (local database)
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")

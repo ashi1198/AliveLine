@@ -2,6 +2,7 @@ package com.aliveline.app.ui.navigation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import com.aliveline.app.feature.settings.SettingsScreen
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -105,6 +106,7 @@ fun MainScaffold(onReplayOnboarding: () -> Unit) {
                         onBotClick = { navController.navigate(Routes.bot(it)) },
                         onTaskClick = { navController.navigate(Routes.task(it)) },
                         onOpenAchievements = { navController.navigate(Routes.ACHIEVEMENTS) },
+                        onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                     )
                 }
                 composable(Routes.MAP) {
@@ -124,6 +126,12 @@ fun MainScaffold(onReplayOnboarding: () -> Unit) {
                 }
                 composable(Routes.ACHIEVEMENTS) {
                     AchievementsScreen(onBack = { navController.popBackStack() })
+                }
+                composable(Routes.SETTINGS) {
+                    SettingsScreen(
+                        onBack = { navController.popBackStack() },
+                        onReplayOnboarding = onReplayOnboarding,
+                    )
                 }
                 composable(Routes.FOCUS) {
                     FocusScreen(onClose = { navController.popBackStack() })

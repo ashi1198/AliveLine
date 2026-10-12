@@ -3,6 +3,7 @@ package com.aliveline.app.audio
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
+import com.aliveline.app.domain.model.BotType
 import com.aliveline.app.domain.repository.SettingsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
@@ -20,11 +21,13 @@ class SoundPlayer @Inject constructor(
     @ApplicationContext private val context: Context,
     settings: SettingsRepository,
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val soundIds = ConcurrentHashMap<Sfx, Int>()
+    private data class Key(val sfx: Sfx, val bot: BotType?)
 
-    @Volatile
-    private var enabled = true
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val soundIds = ConcurrentHashMap<Key, Int>()
+
+    @Volatile private var enabled = true
+    @Volatile private var volume = 0.8f
 
     private val pool: SoundPool = SoundPool.Builder()
         .setMaxStreams(4)
@@ -37,19 +40,37 @@ class SoundPlayer @Inject constructor(
         .build()
 
     init {
-        scope.launch { settings.soundEnabled.collect { enabled = it } }
+        scope.launch {
+            settings.settings.collect {
+                enabled = it.soundEnabled
+                volume = it.soundVolume
+            }
+        }
         scope.launch {
             Sfx.entries.forEach { sfx ->
-                val file = File(context.cacheDir, "sfx_${sfx.name.lowercase()}.wav")
-                file.writeBytes(SfxSynth.wav(sfx))
-                soundIds[sfx] = pool.load(file.absolutePath, 1)
+                val variants: List<BotType?> =
+                    if (SfxSynth.isBotAware(sfx)) listOf<BotType?>(null) + BotType.entries else listOf(null)
+                variants.forEach { bot -> load(sfx, bot) }
             }
         }
     }
 
-    fun play(sfx: Sfx) {
+    private fun load(sfx: Sfx, bot: BotType?) {
+        val name = "sfx2_${sfx.name.lowercase()}_${bot?.name?.lowercase() ?: "any"}.wav"
+        val file = File(context.cacheDir, name)
+        file.writeBytes(SfxSynth.wav(sfx, bot))
+        soundIds[Key(sfx, bot)] = pool.load(file.absolutePath, 1)
+    }
+
+    /**
+     * @param bot picks that bot's "voice" for wake, complete and celebrate sounds (ignored for other sounds).
+     * @param volume overrides the saved volume, used by the Settings slider preview.
+     */
+    fun play(sfx: Sfx, bot: BotType? = null, volume: Float? = null) {
         if (!enabled) return
-        val id = soundIds[sfx] ?: return
-        pool.play(id, 1f, 1f, 1, 0, 1f)
+        val key = Key(sfx, if (SfxSynth.isBotAware(sfx)) bot else null)
+        val id = soundIds[key] ?: return
+        val v = (volume ?: this.volume).coerceIn(0f, 1f)
+        pool.play(id, v, v, 1, 0, 1f)
     }
 }

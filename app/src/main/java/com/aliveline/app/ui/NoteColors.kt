@@ -1,5 +1,6 @@
 package com.aliveline.app.ui
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import com.aliveline.app.domain.model.NoteColor
@@ -29,12 +30,14 @@ val NoteColor.label: String
         NoteColor.SLATE -> "Slate"
     }
 
-/** Background of a note card: the normal surface, softly tinted. */
+/** Background of a note card: the current theme surface, softly tinted. */
+@Composable
 fun NoteColor.cardColor(): Color =
     if (this == NoteColor.DEFAULT) AliveColors.Surface
     else accent.copy(alpha = 0.20f).compositeOver(AliveColors.Surface)
 
 /** Background of the whole editor screen: a very light wash. */
+@Composable
 fun NoteColor.screenTint(): Color =
     if (this == NoteColor.DEFAULT) AliveColors.Background
     else accent.copy(alpha = 0.12f).compositeOver(AliveColors.Background)

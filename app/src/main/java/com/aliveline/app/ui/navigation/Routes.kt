@@ -10,6 +10,7 @@ object Routes {
     const val ACHIEVEMENTS = "achievements"
     const val FOCUS = "focus"
 
+    const val SETTINGS = "settings"
     const val BOT_PATTERN = "bot/{botType}"
     const val TASK_PATTERN = "task/{taskId}"
     const val CREATE_PATTERN = "create?bot={bot}"

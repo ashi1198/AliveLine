@@ -1,11 +1,20 @@
 package com.aliveline.app.ui.theme
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
 
+/** Background, surface and primary follow the theme and accent chosen in Settings. */
 object AliveColors {
-    val Background = Color(0xFF0B1020)
-    val Surface = Color(0xFF151B30)
+    val Background: Color
+        @Composable @ReadOnlyComposable get() = LocalAppPalette.current.background
+
+    val Surface: Color
+        @Composable @ReadOnlyComposable get() = LocalAppPalette.current.surface
+
+    val Primary: Color
+        @Composable @ReadOnlyComposable get() = LocalAppPalette.current.primary
+
     val TextPrimary = Color.White
     val TextSecondary = Color(0xFF9AA3C0)
-    val Primary = Color(0xFF7C7CF5)
 }
