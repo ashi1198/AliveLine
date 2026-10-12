@@ -20,6 +20,7 @@ data class TaskEntity(
     val createdAt: Long,
     val startMinute: Int? = null,
     val durationMin: Int? = null,
+    val reminderMinute: Int? = null,
 )
 
 @Entity(

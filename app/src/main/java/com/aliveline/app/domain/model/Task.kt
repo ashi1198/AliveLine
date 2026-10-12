@@ -22,5 +22,6 @@ data class Task(
     val createdAt: Long = 0,
     val startMinute: Int? = null,   // minutes after midnight, used by the Daily Map
     val durationMin: Int? = null,   // length on the Daily Map
+    val reminderMinute: Int? = null, // minutes after midnight, time of the reminder notification
     val subtasks: List<Subtask> = emptyList(),
 )

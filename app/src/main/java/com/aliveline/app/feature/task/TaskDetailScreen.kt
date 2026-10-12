@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -36,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aliveline.app.audio.LocalSoundPlayer
 import com.aliveline.app.audio.Sfx
+import com.aliveline.app.domain.TimeFormat
 import com.aliveline.app.domain.model.Repeat
 import com.aliveline.app.domain.model.Subtask
 import com.aliveline.app.domain.model.TaskKind
@@ -48,6 +50,7 @@ import com.aliveline.app.ui.theme.AliveColors
 @Composable
 fun TaskDetailScreen(
     onBack: () -> Unit,
+    onEdit: (Long) -> Unit,
     onOpenNote: (Long) -> Unit,
     onAddNote: (Long) -> Unit,
     viewModel: TaskDetailViewModel = hiltViewModel(),
@@ -66,12 +69,13 @@ fun TaskDetailScreen(
         is TaskDetailUiState.Content -> TaskDetailContent(
             content = s,
             onBack = onBack,
+            onEdit = { onEdit(s.task.id) },
             onToggleSubtask = {
                 sound?.play(Sfx.TOGGLE)
                 viewModel.onSubtaskToggled(it)
             },
             onMarkDone = {
-                sound?.play(Sfx.COMPLETE)
+                sound?.play(Sfx.COMPLETE, s.task.bot)
                 viewModel.onMarkDone()
             },
             onUndo = {
@@ -92,6 +96,7 @@ fun TaskDetailScreen(
 private fun TaskDetailContent(
     content: TaskDetailUiState.Content,
     onBack: () -> Unit,
+    onEdit: () -> Unit,
     onToggleSubtask: (Subtask) -> Unit,
     onMarkDone: () -> Unit,
     onUndo: () -> Unit,
@@ -108,6 +113,9 @@ private fun TaskDetailContent(
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
             Spacer(Modifier.weight(1f))
+            IconButton(onClick = onEdit) {
+                Icon(Icons.Default.Edit, contentDescription = "Edit task")
+            }
             IconButton(onClick = onDelete) {
                 Icon(Icons.Default.Delete, contentDescription = "Delete task")
             }
@@ -142,6 +150,11 @@ private fun TaskDetailContent(
             if (task.kind != TaskKind.ONE_TIME) {
                 InfoRow("Repeat", repeatText(task.repeat))
             }
+            task.startMinute?.let { start ->
+                val end = start + (task.durationMin ?: 60)
+                InfoRow("On the map", "${TimeFormat.minuteOfDay(start)} - ${TimeFormat.minuteOfDay(end)}")
+            }
+            task.reminderMinute?.let { InfoRow("Reminder", TimeFormat.minuteOfDay(it)) }
             if (task.description.isNotBlank()) {
                 Text(task.description, color = AliveColors.TextSecondary)
             }

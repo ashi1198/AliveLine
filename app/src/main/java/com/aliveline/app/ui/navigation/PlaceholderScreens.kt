@@ -35,12 +35,3 @@ fun PlaceholderScreen(
         content()
     }
 }
-
-/** Reminders are still a placeholder. The parameter is kept so MainScaffold does not need to change. */
-@Composable
-fun RemindersScreen(@Suppress("UNUSED_PARAMETER") onReplayOnboarding: () -> Unit = {}) {
-    PlaceholderScreen(
-        title = "Reminders",
-        message = "Alarms and reminders are coming in a later batch.",
-    )
-}

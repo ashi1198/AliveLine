@@ -54,7 +54,7 @@ import com.aliveline.app.feature.notes.NoteEditorScreen
 import com.aliveline.app.feature.notes.NotesScreen
 import com.aliveline.app.feature.task.TaskDetailScreen
 import com.aliveline.app.ui.theme.AliveColors
-
+import com.aliveline.app.feature.reminders.RemindersScreen
 private data class TabItem(val route: String, val label: String, val icon: ImageVector)
 
 private val tabs = listOf(
@@ -122,7 +122,7 @@ fun MainScaffold(onReplayOnboarding: () -> Unit) {
                     )
                 }
                 composable(Routes.REMINDERS) {
-                    RemindersScreen(onReplayOnboarding)
+                    RemindersScreen(onTaskClick = { navController.navigate(Routes.task(it)) })
                 }
                 composable(Routes.ACHIEVEMENTS) {
                     AchievementsScreen(onBack = { navController.popBackStack() })
@@ -153,6 +153,7 @@ fun MainScaffold(onReplayOnboarding: () -> Unit) {
                 ) {
                     TaskDetailScreen(
                         onBack = { navController.popBackStack() },
+                        onEdit = { navController.navigate(Routes.edit(it)) },
                         onOpenNote = { navController.navigate(Routes.note(id = it)) },
                         onAddNote = { taskId -> navController.navigate(Routes.note(taskId = taskId)) },
                     )
@@ -166,6 +167,12 @@ fun MainScaffold(onReplayOnboarding: () -> Unit) {
                             defaultValue = null
                         },
                     ),
+                ) {
+                    CreateTaskScreen(onClose = { navController.popBackStack() })
+                }
+                composable(
+                    Routes.EDIT_PATTERN,
+                    arguments = listOf(navArgument("taskId") { type = NavType.LongType }),
                 ) {
                     CreateTaskScreen(onClose = { navController.popBackStack() })
                 }

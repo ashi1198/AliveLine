@@ -14,7 +14,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
-
+import com.aliveline.app.data.MIGRATION_4_5
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
@@ -23,7 +23,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AliveLineDatabase =
         Room.databaseBuilder(context, AliveLineDatabase::class.java, "aliveline.db")
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             .build()
 
     @Provides

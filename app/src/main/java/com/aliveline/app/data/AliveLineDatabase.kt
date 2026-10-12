@@ -10,7 +10,7 @@ import com.aliveline.app.data.task.TaskEntity
 
 @Database(
     entities = [TaskEntity::class, SubtaskEntity::class, NoteEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = false,
 )
 abstract class AliveLineDatabase : RoomDatabase() {

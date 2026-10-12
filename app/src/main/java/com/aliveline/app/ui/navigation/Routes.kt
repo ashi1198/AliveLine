@@ -15,11 +15,11 @@ object Routes {
     const val TASK_PATTERN = "task/{taskId}"
     const val CREATE_PATTERN = "create?bot={bot}"
     const val NOTE_PATTERN = "note?id={id}&taskId={taskId}"
-
+    const val EDIT_PATTERN = "edit/{taskId}"
     fun bot(type: BotType) = "bot/${type.name}"
     fun task(id: Long) = "task/$id"
     fun create(bot: BotType? = null) = if (bot == null) "create" else "create?bot=${bot.name}"
-
+    fun edit(id: Long) = "edit/$id"
     /** Open a note editor: pass id to edit, taskId to start a new note attached to that task. */
     fun note(id: Long? = null, taskId: Long? = null) = "note?id=${id ?: -1}&taskId=${taskId ?: -1}"
 }

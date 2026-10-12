@@ -4,6 +4,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
+import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -28,6 +30,27 @@ abstract class TaskDao {
         val id = insertTask(task)
         if (subtasks.isNotEmpty()) insertSubtasks(subtasks.map { it.copy(taskId = id) })
         return id
+    }
+
+    @Update
+    abstract suspend fun updateTask(task: TaskEntity)
+
+    @Upsert
+    abstract suspend fun upsertSubtasks(subtasks: List<SubtaskEntity>)
+
+    @Query("DELETE FROM subtasks WHERE taskId = :taskId")
+    abstract suspend fun deleteAllSubtasks(taskId: Long)
+
+    @Query("DELETE FROM subtasks WHERE taskId = :taskId AND id NOT IN (:keepIds)")
+    abstract suspend fun deleteSubtasksNotIn(taskId: Long, keepIds: List<Long>)
+
+    /** Edits a task and its subtasks in one transaction. Subtasks with id 0 are new; missing ones are removed. */
+    @Transaction
+    open suspend fun updateWithSubtasks(task: TaskEntity, subtasks: List<SubtaskEntity>) {
+        updateTask(task)
+        val keep = subtasks.map { it.id }.filter { it > 0 }
+        if (keep.isEmpty()) deleteAllSubtasks(task.id) else deleteSubtasksNotIn(task.id, keep)
+        if (subtasks.isNotEmpty()) upsertSubtasks(subtasks.map { it.copy(taskId = task.id) })
     }
 
     @Query("UPDATE tasks SET completedAt = :completedAt WHERE id = :id")

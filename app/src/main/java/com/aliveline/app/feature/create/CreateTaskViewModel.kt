@@ -10,22 +10,18 @@ import com.aliveline.app.domain.model.Task
 import com.aliveline.app.domain.model.TaskKind
 import com.aliveline.app.domain.repository.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class DeadlineOption(val label: String, val days: Long?) {
-    NONE("No deadline", null),
-    TODAY("Today", 0),
-    TOMORROW("Tomorrow", 1),
-    IN_3_DAYS("In 3 days", 3),
-    NEXT_WEEK("Next week", 7),
-}
+data class EditableSubtask(val id: Long, val title: String, val done: Boolean)
 
 data class CreateTaskUiState(
     val title: String = "",
@@ -33,11 +29,14 @@ data class CreateTaskUiState(
     val bot: BotType = BotType.BRAIN,
     val kind: TaskKind = TaskKind.ONE_TIME,
     val repeat: Repeat = Repeat.DAILY,
-    val deadline: DeadlineOption = DeadlineOption.NONE,
+    val dueDate: LocalDate? = null,
     val startMinute: Int? = null,
     val durationMin: Int = 60,
-    val subtasks: List<String> = emptyList(),
+    val reminderMinute: Int? = null,
+    val subtasks: List<EditableSubtask> = emptyList(),
     val newSubtask: String = "",
+    val isEditing: Boolean = false,
+    val loaded: Boolean = true,
 ) {
     val canSave: Boolean get() = title.isNotBlank()
 }
@@ -48,26 +47,62 @@ class CreateTaskViewModel @Inject constructor(
     private val repo: TaskRepository,
 ) : ViewModel() {
 
+    /** Set only on the edit route ("edit/{taskId}"). */
+    private val editId: Long? = savedStateHandle.get<Long>("taskId")?.takeIf { it > 0 }
+
     private val initialBot: BotType = savedStateHandle.get<String>("bot")
         ?.let { name -> runCatching { BotType.valueOf(name) }.getOrNull() }
         ?: BotType.BRAIN
 
-    private val _state = MutableStateFlow(CreateTaskUiState(bot = initialBot))
+    private var original: Task? = null
+
+    private val _state = MutableStateFlow(
+        CreateTaskUiState(bot = initialBot, isEditing = editId != null, loaded = editId == null),
+    )
     val state: StateFlow<CreateTaskUiState> = _state.asStateFlow()
+
+    init {
+        if (editId != null) {
+            viewModelScope.launch {
+                val zone = ZoneId.systemDefault()
+                val task = repo.observeTask(editId).first()
+                original = task
+                if (task != null) {
+                    _state.value = CreateTaskUiState(
+                        title = task.title,
+                        description = task.description,
+                        bot = task.bot,
+                        kind = task.kind,
+                        repeat = if (task.repeat == Repeat.NONE) Repeat.DAILY else task.repeat,
+                        dueDate = task.dueAt?.let { Instant.ofEpochMilli(it).atZone(zone).toLocalDate() },
+                        startMinute = task.startMinute,
+                        durationMin = task.durationMin ?: 60,
+                        reminderMinute = task.reminderMinute,
+                        subtasks = task.subtasks.map { EditableSubtask(it.id, it.title, it.done) },
+                        isEditing = true,
+                        loaded = true,
+                    )
+                } else {
+                    _state.update { it.copy(loaded = true) }
+                }
+            }
+        }
+    }
 
     fun onTitleChange(v: String) = _state.update { it.copy(title = v) }
     fun onDescriptionChange(v: String) = _state.update { it.copy(description = v) }
     fun onBotChange(v: BotType) = _state.update { it.copy(bot = v) }
     fun onKindChange(v: TaskKind) = _state.update { it.copy(kind = v) }
     fun onRepeatChange(v: Repeat) = _state.update { it.copy(repeat = v) }
-    fun onDeadlineChange(v: DeadlineOption) = _state.update { it.copy(deadline = v) }
+    fun onDueDateChange(v: LocalDate?) = _state.update { it.copy(dueDate = v) }
     fun onStartMinuteChange(v: Int?) = _state.update { it.copy(startMinute = v) }
     fun onDurationChange(v: Int) = _state.update { it.copy(durationMin = v) }
+    fun onReminderChange(v: Int?) = _state.update { it.copy(reminderMinute = v) }
     fun onNewSubtaskChange(v: String) = _state.update { it.copy(newSubtask = v) }
 
     fun onAddSubtask() = _state.update {
         val text = it.newSubtask.trim()
-        if (text.isEmpty()) it else it.copy(subtasks = it.subtasks + text, newSubtask = "")
+        if (text.isEmpty()) it else it.copy(subtasks = it.subtasks + EditableSubtask(0, text, false), newSubtask = "")
     }
 
     fun onRemoveSubtask(index: Int) = _state.update {
@@ -80,30 +115,48 @@ class CreateTaskViewModel @Inject constructor(
 
         val zone = ZoneId.systemDefault()
         val dueAt = if (s.kind == TaskKind.ONE_TIME) {
-            s.deadline.days?.let { days ->
-                LocalDate.now(zone).plusDays(days).atTime(23, 59).atZone(zone).toInstant().toEpochMilli()
-            }
+            s.dueDate?.atTime(23, 59)?.atZone(zone)?.toInstant()?.toEpochMilli()
         } else {
             null
         }
         val pending = s.newSubtask.trim().takeIf { it.isNotEmpty() }
-        val allSubtasks = s.subtasks + listOfNotNull(pending)
+        val subtasks = (s.subtasks + listOfNotNull(pending?.let { EditableSubtask(0, it, false) }))
+            .map { Subtask(id = it.id, title = it.title, done = it.done) }
 
         viewModelScope.launch {
-            repo.addTask(
-                Task(
-                    title = s.title.trim(),
-                    description = s.description.trim(),
-                    bot = s.bot,
-                    kind = s.kind,
-                    repeat = if (s.kind == TaskKind.ONE_TIME) Repeat.NONE else s.repeat,
-                    dueAt = dueAt,
-                    createdAt = System.currentTimeMillis(),
-                    startMinute = s.startMinute,
-                    durationMin = if (s.startMinute != null) s.durationMin else null,
-                    subtasks = allSubtasks.map { Subtask(title = it) },
-                ),
-            )
+            val base = original
+            if (base == null) {
+                repo.addTask(
+                    Task(
+                        title = s.title.trim(),
+                        description = s.description.trim(),
+                        bot = s.bot,
+                        kind = s.kind,
+                        repeat = if (s.kind == TaskKind.ONE_TIME) Repeat.NONE else s.repeat,
+                        dueAt = dueAt,
+                        createdAt = System.currentTimeMillis(),
+                        startMinute = s.startMinute,
+                        durationMin = if (s.startMinute != null) s.durationMin else null,
+                        reminderMinute = s.reminderMinute,
+                        subtasks = subtasks,
+                    ),
+                )
+            } else {
+                repo.updateTask(
+                    base.copy(
+                        title = s.title.trim(),
+                        description = s.description.trim(),
+                        bot = s.bot,
+                        kind = s.kind,
+                        repeat = if (s.kind == TaskKind.ONE_TIME) Repeat.NONE else s.repeat,
+                        dueAt = dueAt,
+                        startMinute = s.startMinute,
+                        durationMin = if (s.startMinute != null) s.durationMin else null,
+                        reminderMinute = s.reminderMinute,
+                        subtasks = subtasks,
+                    ),
+                )
+            }
             onSaved()
         }
     }

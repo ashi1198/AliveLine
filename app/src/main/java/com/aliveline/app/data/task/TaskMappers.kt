@@ -21,6 +21,7 @@ fun TaskWithSubtasks.toDomain(): Task = Task(
     createdAt = task.createdAt,
     startMinute = task.startMinute,
     durationMin = task.durationMin,
+    reminderMinute = task.reminderMinute,
     subtasks = subtasks.sortedBy { it.id }.map { Subtask(it.id, it.title, it.done) },
 )
 
@@ -36,6 +37,7 @@ fun Task.toEntity(): TaskEntity = TaskEntity(
     createdAt = createdAt,
     startMinute = startMinute,
     durationMin = durationMin,
+    reminderMinute = reminderMinute,
 )
 
 fun Subtask.toEntity(taskId: Long): SubtaskEntity =

@@ -21,6 +21,8 @@ class RoomTaskRepository @Inject constructor(
     override suspend fun addTask(task: Task): Long =
         dao.insertWithSubtasks(task.toEntity(), task.subtasks.map { it.toEntity(taskId = 0) })
 
+    override suspend fun updateTask(task: Task) =
+        dao.updateWithSubtasks(task.toEntity(), task.subtasks.map { it.toEntity(task.id) })
     override suspend fun setTaskCompletedAt(id: Long, completedAt: Long?) =
         dao.setCompletedAt(id, completedAt)
 
