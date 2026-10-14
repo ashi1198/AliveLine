@@ -46,7 +46,7 @@ import com.aliveline.app.ui.BotState
 import com.aliveline.app.ui.displayName
 import com.aliveline.app.ui.palette
 import com.aliveline.app.ui.theme.AliveColors
-
+import com.aliveline.app.domain.model.ReminderStyle
 @Composable
 fun TaskDetailScreen(
     onBack: () -> Unit,
@@ -154,7 +154,10 @@ private fun TaskDetailContent(
                 val end = start + (task.durationMin ?: 60)
                 InfoRow("On the map", "${TimeFormat.minuteOfDay(start)} - ${TimeFormat.minuteOfDay(end)}")
             }
-            task.reminderMinute?.let { InfoRow("Reminder", TimeFormat.minuteOfDay(it)) }
+            task.reminderMinute?.let {
+                val kind = if (task.reminderStyle == ReminderStyle.ALARM) "Alarm" else "Notification"
+                InfoRow("Reminder", "${TimeFormat.minuteOfDay(it)} \u00B7 $kind")
+            }
             if (task.description.isNotBlank()) {
                 Text(task.description, color = AliveColors.TextSecondary)
             }

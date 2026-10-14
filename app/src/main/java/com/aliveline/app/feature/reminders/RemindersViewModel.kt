@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-
+import com.aliveline.app.domain.model.ReminderStyle
 data class ReminderItem(
     val taskId: Long,
     val title: String,
@@ -26,6 +26,7 @@ data class ReminderItem(
     val timeLabel: String,
     val whenLabel: String,
     val minute: Int,
+    val isAlarm: Boolean = false,
 )
 
 data class RemindersUiState(val items: List<ReminderItem> = emptyList())
@@ -53,6 +54,7 @@ class RemindersViewModel @Inject constructor(
                     timeLabel = TimeFormat.minuteOfDay(minute),
                     whenLabel = whenLabel(task, today, zone),
                     minute = minute,
+                    isAlarm = task.reminderStyle == ReminderStyle.ALARM,
                 )
             }
             .sortedBy { it.minute }

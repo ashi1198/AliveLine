@@ -42,3 +42,23 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
         db.execSQL("ALTER TABLE `tasks` ADD COLUMN `reminderMinute` INTEGER")
     }
 }
+/** v5 -> v6: reminder style (notification or alarm) and note decorations (stickers and photos). */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `reminderStyle` TEXT NOT NULL DEFAULT 'NOTIFICATION'")
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `note_decorations` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`noteId` INTEGER NOT NULL, " +
+                    "`type` TEXT NOT NULL, " +
+                    "`content` TEXT NOT NULL, " +
+                    "`x` REAL NOT NULL, " +
+                    "`y` REAL NOT NULL, " +
+                    "`scale` REAL NOT NULL, " +
+                    "`rotation` REAL NOT NULL, " +
+                    "`z` INTEGER NOT NULL, " +
+                    "FOREIGN KEY(`noteId`) REFERENCES `notes`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)",
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_note_decorations_noteId` ON `note_decorations` (`noteId`)")
+    }
+}

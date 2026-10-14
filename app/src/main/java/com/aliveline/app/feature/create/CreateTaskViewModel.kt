@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aliveline.app.domain.model.BotType
+import com.aliveline.app.domain.model.ReminderStyle
 import com.aliveline.app.domain.model.Repeat
 import com.aliveline.app.domain.model.Subtask
 import com.aliveline.app.domain.model.Task
@@ -33,6 +34,7 @@ data class CreateTaskUiState(
     val startMinute: Int? = null,
     val durationMin: Int = 60,
     val reminderMinute: Int? = null,
+    val reminderStyle: ReminderStyle = ReminderStyle.NOTIFICATION,
     val subtasks: List<EditableSubtask> = emptyList(),
     val newSubtask: String = "",
     val isEditing: Boolean = false,
@@ -78,6 +80,7 @@ class CreateTaskViewModel @Inject constructor(
                         startMinute = task.startMinute,
                         durationMin = task.durationMin ?: 60,
                         reminderMinute = task.reminderMinute,
+                        reminderStyle = task.reminderStyle,
                         subtasks = task.subtasks.map { EditableSubtask(it.id, it.title, it.done) },
                         isEditing = true,
                         loaded = true,
@@ -98,6 +101,7 @@ class CreateTaskViewModel @Inject constructor(
     fun onStartMinuteChange(v: Int?) = _state.update { it.copy(startMinute = v) }
     fun onDurationChange(v: Int) = _state.update { it.copy(durationMin = v) }
     fun onReminderChange(v: Int?) = _state.update { it.copy(reminderMinute = v) }
+    fun onReminderStyleChange(v: ReminderStyle) = _state.update { it.copy(reminderStyle = v) }
     fun onNewSubtaskChange(v: String) = _state.update { it.copy(newSubtask = v) }
 
     fun onAddSubtask() = _state.update {
@@ -138,6 +142,7 @@ class CreateTaskViewModel @Inject constructor(
                         startMinute = s.startMinute,
                         durationMin = if (s.startMinute != null) s.durationMin else null,
                         reminderMinute = s.reminderMinute,
+                        reminderStyle = s.reminderStyle,
                         subtasks = subtasks,
                     ),
                 )
@@ -153,6 +158,7 @@ class CreateTaskViewModel @Inject constructor(
                         startMinute = s.startMinute,
                         durationMin = if (s.startMinute != null) s.durationMin else null,
                         reminderMinute = s.reminderMinute,
+                        reminderStyle = s.reminderStyle,
                         subtasks = subtasks,
                     ),
                 )

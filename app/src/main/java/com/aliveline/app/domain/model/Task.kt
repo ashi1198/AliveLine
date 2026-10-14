@@ -4,6 +4,15 @@ enum class TaskKind { ONE_TIME, RECURRING, HABIT }
 
 enum class Repeat { NONE, DAILY, WEEKDAYS, WEEKLY }
 
+/** How a reminder reaches you: a gentle notification, or an alarm that rings until you act. */
+enum class ReminderStyle {
+    NOTIFICATION, ALARM;
+
+    companion object {
+        fun fromName(name: String?): ReminderStyle = entries.firstOrNull { it.name == name } ?: NOTIFICATION
+    }
+}
+
 data class Subtask(
     val id: Long = 0,
     val title: String,
@@ -22,6 +31,7 @@ data class Task(
     val createdAt: Long = 0,
     val startMinute: Int? = null,   // minutes after midnight, used by the Daily Map
     val durationMin: Int? = null,   // length on the Daily Map
-    val reminderMinute: Int? = null, // minutes after midnight, time of the reminder notification
+    val reminderMinute: Int? = null, // minutes after midnight, time of the reminder
+    val reminderStyle: ReminderStyle = ReminderStyle.NOTIFICATION,
     val subtasks: List<Subtask> = emptyList(),
 )

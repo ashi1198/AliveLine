@@ -10,6 +10,7 @@ data class Note(
     val color: NoteColor = NoteColor.DEFAULT,
     val createdAt: Long = 0,
     val updatedAt: Long = 0,
+    val decorations: List<NoteDecoration> = emptyList(), // stickers and photos placed on the note
 )
 
 val Note.displayTitle: String

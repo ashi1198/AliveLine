@@ -1,6 +1,7 @@
 package com.aliveline.app.data.task
 
 import com.aliveline.app.domain.model.BotType
+import com.aliveline.app.domain.model.ReminderStyle
 import com.aliveline.app.domain.model.Repeat
 import com.aliveline.app.domain.model.Subtask
 import com.aliveline.app.domain.model.Task
@@ -22,6 +23,7 @@ fun TaskWithSubtasks.toDomain(): Task = Task(
     startMinute = task.startMinute,
     durationMin = task.durationMin,
     reminderMinute = task.reminderMinute,
+    reminderStyle = ReminderStyle.fromName(task.reminderStyle),
     subtasks = subtasks.sortedBy { it.id }.map { Subtask(it.id, it.title, it.done) },
 )
 
@@ -38,6 +40,7 @@ fun Task.toEntity(): TaskEntity = TaskEntity(
     startMinute = startMinute,
     durationMin = durationMin,
     reminderMinute = reminderMinute,
+    reminderStyle = reminderStyle.name,
 )
 
 fun Subtask.toEntity(taskId: Long): SubtaskEntity =

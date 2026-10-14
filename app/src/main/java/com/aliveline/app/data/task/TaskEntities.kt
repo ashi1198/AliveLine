@@ -21,6 +21,7 @@ data class TaskEntity(
     val startMinute: Int? = null,
     val durationMin: Int? = null,
     val reminderMinute: Int? = null,
+    val reminderStyle: String = "NOTIFICATION",
 )
 
 @Entity(

@@ -48,7 +48,7 @@ import com.aliveline.app.ui.cardColor
 import com.aliveline.app.ui.components.EmptyHint
 import com.aliveline.app.ui.components.SectionTitle
 import com.aliveline.app.ui.theme.AliveColors
-
+import com.aliveline.app.domain.model.DecorationType
 @Composable
 fun NotesScreen(
     onNoteClick: (Long) -> Unit,
@@ -202,6 +202,19 @@ private fun NoteCard(item: NoteItem, onClick: () -> Unit, onTogglePin: () -> Uni
                         Text("\u21B3 $it", color = AliveColors.TextSecondary, fontSize = 12.sp, maxLines = 1)
                     }
                 }
+            }
+            if (note.decorations.isNotEmpty()) {
+                val photoCount = note.decorations.count { it.type == DecorationType.PHOTO }
+                val stickerCount = note.decorations.size - photoCount
+                Text(
+                    listOfNotNull(
+                        if (photoCount > 0) "\uD83D\uDDBC $photoCount" else null,
+                        if (stickerCount > 0) "\u2728 $stickerCount" else null,
+                    ).joinToString("  \u00B7  "),
+                    color = AliveColors.TextSecondary,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
             }
         }
     }

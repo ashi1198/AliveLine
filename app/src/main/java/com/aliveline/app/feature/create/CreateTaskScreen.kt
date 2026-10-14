@@ -52,6 +52,7 @@ import com.aliveline.app.audio.LocalSoundPlayer
 import com.aliveline.app.audio.Sfx
 import com.aliveline.app.domain.TimeFormat
 import com.aliveline.app.domain.model.BotType
+import com.aliveline.app.domain.model.ReminderStyle
 import com.aliveline.app.domain.model.Repeat
 import com.aliveline.app.domain.model.TaskKind
 import com.aliveline.app.ui.components.TimePickerDialog
@@ -226,8 +227,31 @@ fun CreateTaskScreen(
                         },
                     ) { Text("Use the start time (${TimeFormat.minuteOfDay(start)})") }
                 }
+                if (s.reminderMinute != null) {
+                    ChipRow {
+                        FilterChip(
+                            selected = s.reminderStyle == ReminderStyle.NOTIFICATION,
+                            onClick = { viewModel.onReminderStyleChange(ReminderStyle.NOTIFICATION) },
+                            label = { Text("Notification") },
+                        )
+                        FilterChip(
+                            selected = s.reminderStyle == ReminderStyle.ALARM,
+                            onClick = { viewModel.onReminderStyleChange(ReminderStyle.ALARM) },
+                            label = { Text("Alarm") },
+                        )
+                    }
+                    Text(
+                        if (s.reminderStyle == ReminderStyle.ALARM) {
+                            "Rings with your alarm sound until you mark it done or snooze it."
+                        } else {
+                            "A gentle nudge in your notifications."
+                        },
+                        color = AliveColors.TextSecondary,
+                        fontSize = 12.sp,
+                    )
+                }
                 Text(
-                    "You'll get a gentle notification only if the task isn't done yet.",
+                    "Reminders only appear if the task isn't done yet.",
                     color = AliveColors.TextSecondary,
                     fontSize = 12.sp,
                 )

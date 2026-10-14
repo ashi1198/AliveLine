@@ -126,7 +126,7 @@ fun RemindersScreen(
                                 maxLines = 2,
                             )
                             Text(
-                                "${item.whenLabel} \u00B7 ${item.bot.displayName}",
+                                "${item.whenLabel} \u00B7 ${if (item.isAlarm) "Alarm" else "Notification"} \u00B7 ${item.bot.displayName}",
                                 color = AliveColors.TextSecondary,
                                 fontSize = 13.sp,
                             )
