@@ -2,6 +2,8 @@ package com.aliveline.app.data
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import java.time.Instant
+import java.time.ZoneId
 
 /** v1 -> v2: adds the notes table. Existing tasks are untouched. */
 val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -36,12 +38,14 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
         db.execSQL("ALTER TABLE `tasks` ADD COLUMN `durationMin` INTEGER")
     }
 }
+
 /** v4 -> v5: tasks can have a reminder time. */
 val MIGRATION_4_5 = object : Migration(4, 5) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("ALTER TABLE `tasks` ADD COLUMN `reminderMinute` INTEGER")
     }
 }
+
 /** v5 -> v6: reminder style (notification or alarm) and note decorations (stickers and photos). */
 val MIGRATION_5_6 = object : Migration(5, 6) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -60,5 +64,38 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
                     "FOREIGN KEY(`noteId`) REFERENCES `notes`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)",
         )
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_note_decorations_noteId` ON `note_decorations` (`noteId`)")
+    }
+}
+
+/**
+ * v6 -> v7: completion history. Each task's most recent completion is copied into the new table,
+ * so a habit you finished yesterday is not wrongly counted as missed right after the update.
+ */
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `completions` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`taskId` INTEGER NOT NULL, " +
+                    "`bot` TEXT NOT NULL, " +
+                    "`epochDay` INTEGER NOT NULL, " +
+                    "`completedAt` INTEGER NOT NULL)",
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_completions_epochDay` ON `completions` (`epochDay`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_completions_taskId` ON `completions` (`taskId`)")
+
+        val zone = ZoneId.systemDefault()
+        db.query("SELECT id, bot, completedAt FROM tasks WHERE completedAt IS NOT NULL").use { cursor ->
+            while (cursor.moveToNext()) {
+                val taskId = cursor.getLong(0)
+                val bot = cursor.getString(1)
+                val completedAt = cursor.getLong(2)
+                val day = Instant.ofEpochMilli(completedAt).atZone(zone).toLocalDate().toEpochDay()
+                db.execSQL(
+                    "INSERT INTO completions (taskId, bot, epochDay, completedAt) VALUES (?, ?, ?, ?)",
+                    arrayOf<Any>(taskId, bot, day, completedAt),
+                )
+            }
+        }
     }
 }

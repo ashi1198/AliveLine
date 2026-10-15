@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aliveline.app.domain.BotChatter
 import com.aliveline.app.domain.BotConditionCalculator
+import com.aliveline.app.domain.HistoryRules
 import com.aliveline.app.domain.model.BotCondition
 import com.aliveline.app.domain.model.BotType
 import com.aliveline.app.domain.model.completedOn
@@ -48,12 +49,19 @@ class BotDetailViewModel @Inject constructor(
     private val chatterIndex = MutableStateFlow(0)
 
     val uiState: StateFlow<BotDetailUiState> =
-        combine(repo.observeTasks(), celebrating, waving, chatterIndex) { all, isCelebrating, isWaving, index ->
+        combine(
+            repo.observeTasks(),
+            repo.observeCompletions(),
+            celebrating,
+            waving,
+            chatterIndex,
+        ) { all, completions, isCelebrating, isWaving, index ->
             val zone = ZoneId.systemDefault()
             val now = LocalDateTime.now(zone)
             val today = now.toLocalDate()
             val tasks = all.filter { it.bot == bot }
-            val condition = BotConditionCalculator.calculate(tasks, today, zone)
+            val missed = HistoryRules.missedByBot(all, completions, today, zone).getValue(bot)
+            val condition = BotConditionCalculator.calculate(tasks, today, zone, missed)
             val pending = tasks.currentTodos(today, zone)
             val done = tasks.completedOn(today, zone)
 

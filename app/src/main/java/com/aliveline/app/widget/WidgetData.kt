@@ -1,8 +1,10 @@
 package com.aliveline.app.widget
 
 import com.aliveline.app.domain.BotConditionCalculator
+import com.aliveline.app.domain.HistoryRules
 import com.aliveline.app.domain.model.BotCondition
 import com.aliveline.app.domain.model.BotType
+import com.aliveline.app.domain.model.Completion
 import com.aliveline.app.domain.model.Task
 import com.aliveline.app.domain.model.currentTodos
 import com.aliveline.app.ui.conditionMessage
@@ -25,17 +27,27 @@ object WidgetDataBuilder {
     /**
      * @param preferredBot when set, the widget shows exactly that bot (its mood and its own top todo).
      * When null, it shows the bot that owns the overall top todo, or the happiest bot if nothing is pending.
+     * @param completions the completion history, used so the mood matches what the app shows.
      */
     fun build(
         tasks: List<Task>,
         today: LocalDate,
         zone: ZoneId,
         preferredBot: BotType? = null,
+        completions: List<Completion> = emptyList(),
     ): WidgetData {
-        if (preferredBot != null) return buildFor(preferredBot, tasks, today, zone)
+        val missed = HistoryRules.missedByBot(tasks, completions, today, zone)
+        if (preferredBot != null) {
+            return buildFor(preferredBot, tasks, today, zone, missed.getValue(preferredBot))
+        }
 
         val conditions = BotType.entries.associateWith { bot ->
-            BotConditionCalculator.calculate(tasks.filter { it.bot == bot }, today, zone)
+            BotConditionCalculator.calculate(
+                tasks.filter { it.bot == bot },
+                today,
+                zone,
+                missed.getValue(bot),
+            )
         }
 
         // The bot that owns the top todo is shown, so the face and the todo always match.
@@ -62,9 +74,15 @@ object WidgetDataBuilder {
         )
     }
 
-    private fun buildFor(bot: BotType, tasks: List<Task>, today: LocalDate, zone: ZoneId): WidgetData {
+    private fun buildFor(
+        bot: BotType,
+        tasks: List<Task>,
+        today: LocalDate,
+        zone: ZoneId,
+        missedYesterday: Int,
+    ): WidgetData {
         val botTasks = tasks.filter { it.bot == bot }
-        val condition = BotConditionCalculator.calculate(botTasks, today, zone)
+        val condition = BotConditionCalculator.calculate(botTasks, today, zone, missedYesterday)
         val top = botTasks.currentTodos(today, zone).firstOrNull()
 
         if (top != null) {

@@ -27,6 +27,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +42,7 @@ import com.aliveline.app.domain.model.BotType
 import com.aliveline.app.ui.BotAvatar
 import com.aliveline.app.ui.TaskItem
 import com.aliveline.app.ui.components.EmptyHint
+import com.aliveline.app.ui.components.RecapCard
 import com.aliveline.app.ui.components.SectionTitle
 import com.aliveline.app.ui.components.SpeechBubble
 import com.aliveline.app.ui.components.TaskCard
@@ -56,7 +60,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-
+    var recapHidden by rememberSaveable { mutableStateOf(false) }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
@@ -72,6 +76,14 @@ fun HomeScreen(
                         fontWeight = FontWeight.Bold,
                     )
                     Text(state.dateLabel, color = AliveColors.TextSecondary)
+                    if (state.streak >= 2) {
+                        Text(
+                            "\uD83D\uDD25 ${state.streak}-day streak",
+                            color = AliveColors.Primary,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
                 }
                 IconButton(onClick = onOpenAchievements) {
                     Icon(
@@ -100,6 +112,12 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = viewModel::onChatterTapped,
                 )
+            }
+        }
+        val recap = state.recap
+        if (recap != null && !recapHidden) {
+            item(key = "recap") {
+                RecapCard(text = recap, onDismiss = { recapHidden = true })
             }
         }
 

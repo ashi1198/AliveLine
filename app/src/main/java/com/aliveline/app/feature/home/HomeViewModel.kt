@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aliveline.app.domain.BotChatter
 import com.aliveline.app.domain.BotConditionCalculator
+import com.aliveline.app.domain.HistoryRules
 import com.aliveline.app.domain.model.BotCondition
 import com.aliveline.app.domain.model.BotType
+import com.aliveline.app.domain.model.Completion
 import com.aliveline.app.domain.model.Task
 import com.aliveline.app.domain.model.completedOn
 import com.aliveline.app.domain.model.currentTodos
@@ -44,6 +46,8 @@ data class ChatterUi(val bot: BotType, val text: String)
 data class HomeUiState(
     val greeting: String = "Hello",
     val dateLabel: String = "",
+    val streak: Int = 0,
+    val recap: String? = null,
     val bots: List<BotSummary> = BotType.entries.map {
         BotSummary(it, BotCondition.HEALTHY, 0, BotState.IDLE)
     },
@@ -64,8 +68,14 @@ class HomeViewModel @Inject constructor(
     private val userName = settings.settings.map { it.userName }.distinctUntilChanged()
 
     val uiState: StateFlow<HomeUiState> =
-        combine(repo.observeTasks(), celebrating, chatterIndex, userName) { tasks, celebratingBot, index, name ->
-            buildState(tasks, celebratingBot, index, name)
+        combine(
+            repo.observeTasks(),
+            repo.observeCompletions(),
+            celebrating,
+            chatterIndex,
+            userName,
+        ) { tasks, completions, celebratingBot, index, name ->
+            buildState(tasks, completions, celebratingBot, index, name)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
     fun onCompleteClicked(taskId: Long, bot: BotType) {
@@ -84,6 +94,7 @@ class HomeViewModel @Inject constructor(
 
     private fun buildState(
         tasks: List<Task>,
+        completions: List<Completion>,
         celebratingBot: BotType?,
         chatterIdx: Int,
         name: String,
@@ -99,9 +110,11 @@ class HomeViewModel @Inject constructor(
         }
         val greeting = if (name.isBlank()) timeGreeting else "$timeGreeting, ${name.trim()}"
 
+        val missed = HistoryRules.missedByBot(tasks, completions, today, zone)
+
         val bots = BotType.entries.map { bot ->
             val botTasks = tasks.filter { it.bot == bot }
-            val condition = BotConditionCalculator.calculate(botTasks, today, zone)
+            val condition = BotConditionCalculator.calculate(botTasks, today, zone, missed.getValue(bot))
             BotSummary(
                 bot = bot,
                 condition = condition,
@@ -129,6 +142,11 @@ class HomeViewModel @Inject constructor(
         return HomeUiState(
             greeting = greeting,
             dateLabel = today.format(DateTimeFormatter.ofPattern("EEEE, d MMM")),
+            streak = HistoryRules.streak(completions, today),
+            recap = HistoryRules.recapLine(
+                done = HistoryRules.doneOn(completions, today.minusDays(1)),
+                missed = missed.values.sum(),
+            ),
             bots = bots,
             chatter = chatter,
             todos = tasks.currentTodos(today, zone).take(8).map { it.toItem(today, zone) },

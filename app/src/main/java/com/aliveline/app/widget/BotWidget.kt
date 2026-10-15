@@ -70,6 +70,7 @@ class BotWidget : GlanceAppWidget() {
             WidgetEntryPoint::class.java,
         )
         val tasks = entry.taskRepository().observeTasks().first()
+        val completions = entry.taskRepository().observeCompletions().first()
         val settings = entry.settingsRepository().settings.first()
 
         val zone = ZoneId.systemDefault()
@@ -78,7 +79,7 @@ class BotWidget : GlanceAppWidget() {
         // Prepare all three bots up front; tapping the face only changes which one is shown.
         val perBot = withContext(Dispatchers.Default) {
             BotType.entries.associateWith { bot ->
-                val data = WidgetDataBuilder.build(tasks, today, zone, preferredBot = bot)
+                val data = WidgetDataBuilder.build(tasks, today, zone, preferredBot = bot, completions = completions)
                 data to BotFaceRenderer.render(bot, data.condition, 192)
             }
         }

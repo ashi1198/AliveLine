@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import com.aliveline.app.data.note.NoteDao
 import com.aliveline.app.data.note.NoteDecorationEntity
 import com.aliveline.app.data.note.NoteEntity
+import com.aliveline.app.data.task.CompletionEntity
 import com.aliveline.app.data.task.SubtaskEntity
 import com.aliveline.app.data.task.TaskDao
 import com.aliveline.app.data.task.TaskEntity
@@ -15,8 +16,9 @@ import com.aliveline.app.data.task.TaskEntity
         SubtaskEntity::class,
         NoteEntity::class,
         NoteDecorationEntity::class,
+        CompletionEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = false,
 )
 abstract class AliveLineDatabase : RoomDatabase() {
