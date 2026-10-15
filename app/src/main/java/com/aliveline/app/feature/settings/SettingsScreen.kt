@@ -58,7 +58,8 @@ import com.aliveline.app.ui.theme.color
 import com.aliveline.app.ui.theme.surfaceColor
 import com.aliveline.app.ui.theme.title
 import kotlin.math.roundToInt
-
+import androidx.compose.material3.FilterChip
+import com.aliveline.app.domain.model.ReminderStyle
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
@@ -79,6 +80,7 @@ fun SettingsScreen(
             onVolumeChange = viewModel::onVolumeChange,
             onThemeChange = viewModel::onThemeChange,
             onAccentChange = viewModel::onAccentChange,
+            onReminderStyleChange = viewModel::onReminderStyleChange,
             onReplayOnboarding = onReplayOnboarding,
         )
     }
@@ -93,6 +95,7 @@ private fun SettingsContent(
     onVolumeChange: (Float) -> Unit,
     onThemeChange: (ThemeStyle) -> Unit,
     onAccentChange: (AccentColor) -> Unit,
+    onReminderStyleChange: (ReminderStyle) -> Unit,
     onReplayOnboarding: () -> Unit,
 ) {
     val sound = LocalSoundPlayer.current
@@ -163,7 +166,30 @@ private fun SettingsContent(
                     }
                 }
             }
-
+            Section("Reminders") {
+                Text("New reminders start as:", color = AliveColors.TextSecondary, fontSize = 13.sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = settings.reminderStyle == ReminderStyle.NOTIFICATION,
+                        onClick = { onReminderStyleChange(ReminderStyle.NOTIFICATION) },
+                        label = { Text("Gentle nudge") },
+                    )
+                    FilterChip(
+                        selected = settings.reminderStyle == ReminderStyle.ALARM,
+                        onClick = { onReminderStyleChange(ReminderStyle.ALARM) },
+                        label = { Text("Alarm") },
+                    )
+                }
+                Text(
+                    if (settings.reminderStyle == ReminderStyle.ALARM) {
+                        "Rings with your alarm sound until you mark the task done or snooze it."
+                    } else {
+                        "A soft notification with a Done button."
+                    },
+                    color = AliveColors.TextSecondary,
+                    fontSize = 12.sp,
+                )
+            }
             Section("Theme") {
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),

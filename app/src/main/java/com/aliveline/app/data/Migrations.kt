@@ -99,3 +99,18 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
         }
     }
 }
+/** v7 -> v8: sleep tracker nights. */
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `sleep_sessions` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`startAt` INTEGER NOT NULL, " +
+                    "`endAt` INTEGER, " +
+                    "`usageTracked` INTEGER NOT NULL, " +
+                    "`pickups` INTEGER NOT NULL, " +
+                    "`screenOnMs` INTEGER NOT NULL, " +
+                    "`firstHalfHourMs` INTEGER NOT NULL)",
+        )
+    }
+}

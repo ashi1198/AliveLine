@@ -155,7 +155,7 @@ private fun TaskDetailContent(
                 InfoRow("On the map", "${TimeFormat.minuteOfDay(start)} - ${TimeFormat.minuteOfDay(end)}")
             }
             task.reminderMinute?.let {
-                val kind = if (task.reminderStyle == ReminderStyle.ALARM) "Alarm" else "Notification"
+                val kind = if (task.reminderStyle == ReminderStyle.ALARM) "Alarm" else "Gentle nudge"
                 InfoRow("Reminder", "${TimeFormat.minuteOfDay(it)} \u00B7 $kind")
             }
             if (task.description.isNotBlank()) {

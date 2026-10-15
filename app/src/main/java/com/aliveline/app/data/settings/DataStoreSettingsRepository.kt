@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.aliveline.app.domain.model.AccentColor
 import com.aliveline.app.domain.model.AppSettings
+import com.aliveline.app.domain.model.ReminderStyle
 import com.aliveline.app.domain.model.ThemeStyle
 import com.aliveline.app.domain.repository.SettingsRepository
 import java.io.IOException
@@ -24,6 +25,7 @@ private object SettingsKeys {
     val USER_NAME = stringPreferencesKey("user_name")
     val THEME = stringPreferencesKey("theme_style")
     val ACCENT = stringPreferencesKey("accent_color")
+    val REMINDER_STYLE = stringPreferencesKey("default_reminder_style")
 }
 
 @Singleton
@@ -40,6 +42,7 @@ class DataStoreSettingsRepository @Inject constructor(
                 soundVolume = (prefs[SettingsKeys.SOUND_VOLUME] ?: 0.8f).coerceIn(0f, 1f),
                 theme = ThemeStyle.fromName(prefs[SettingsKeys.THEME]),
                 accent = AccentColor.fromName(prefs[SettingsKeys.ACCENT]),
+                reminderStyle = ReminderStyle.fromName(prefs[SettingsKeys.REMINDER_STYLE]),
             )
         }
 
@@ -61,5 +64,9 @@ class DataStoreSettingsRepository @Inject constructor(
 
     override suspend fun setAccent(accent: AccentColor) {
         store.edit { it[SettingsKeys.ACCENT] = accent.name }
+    }
+
+    override suspend fun setReminderStyle(style: ReminderStyle) {
+        store.edit { it[SettingsKeys.REMINDER_STYLE] = style.name }
     }
 }

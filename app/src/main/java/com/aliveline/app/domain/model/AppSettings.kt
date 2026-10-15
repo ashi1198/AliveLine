@@ -22,4 +22,5 @@ data class AppSettings(
     val soundVolume: Float = 0.8f,
     val theme: ThemeStyle = ThemeStyle.NAVY,
     val accent: AccentColor = AccentColor.LAVENDER,
+    val reminderStyle: ReminderStyle = ReminderStyle.NOTIFICATION, // what new reminders start as
 )

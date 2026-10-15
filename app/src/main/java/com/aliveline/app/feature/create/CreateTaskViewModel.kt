@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
+import com.aliveline.app.domain.repository.SettingsRepository
 data class EditableSubtask(val id: Long, val title: String, val done: Boolean)
 
 data class CreateTaskUiState(
@@ -47,6 +47,7 @@ data class CreateTaskUiState(
 class CreateTaskViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repo: TaskRepository,
+    private val settings: SettingsRepository,
 ) : ViewModel() {
 
     /** Set only on the edit route ("edit/{taskId}"). */
@@ -88,6 +89,14 @@ class CreateTaskViewModel @Inject constructor(
                 } else {
                     _state.update { it.copy(loaded = true) }
                 }
+            }
+        }
+    }
+    init {
+        if (editId == null) {
+            viewModelScope.launch {
+                val style = settings.settings.first().reminderStyle
+                _state.update { it.copy(reminderStyle = style) }
             }
         }
     }

@@ -16,6 +16,7 @@ object Routes {
     const val CREATE_PATTERN = "create?bot={bot}"
     const val NOTE_PATTERN = "note?id={id}&taskId={taskId}"
     const val EDIT_PATTERN = "edit/{taskId}"
+    const val SLEEP = "sleep"
     fun bot(type: BotType) = "bot/${type.name}"
     fun task(id: Long) = "task/$id"
     fun create(bot: BotType? = null) = if (bot == null) "create" else "create?bot=${bot.name}"

@@ -9,7 +9,9 @@ import com.aliveline.app.data.MIGRATION_3_4
 import com.aliveline.app.data.MIGRATION_4_5
 import com.aliveline.app.data.MIGRATION_5_6
 import com.aliveline.app.data.MIGRATION_6_7
+import com.aliveline.app.data.MIGRATION_7_8
 import com.aliveline.app.data.note.NoteDao
+import com.aliveline.app.data.sleep.SleepDao
 import com.aliveline.app.data.task.TaskDao
 import dagger.Module
 import dagger.Provides
@@ -33,6 +35,7 @@ object DatabaseModule {
                 MIGRATION_4_5,
                 MIGRATION_5_6,
                 MIGRATION_6_7,
+                MIGRATION_7_8,
             )
             .build()
 
@@ -41,4 +44,7 @@ object DatabaseModule {
 
     @Provides
     fun provideNoteDao(db: AliveLineDatabase): NoteDao = db.noteDao()
+
+    @Provides
+    fun provideSleepDao(db: AliveLineDatabase): SleepDao = db.sleepDao()
 }

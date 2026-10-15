@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aliveline.app.domain.model.AccentColor
 import com.aliveline.app.domain.model.AppSettings
+import com.aliveline.app.domain.model.ReminderStyle
 import com.aliveline.app.domain.model.ThemeStyle
 import com.aliveline.app.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,4 +30,5 @@ class SettingsViewModel @Inject constructor(
     fun onVolumeChange(volume: Float) { viewModelScope.launch { repo.setSoundVolume(volume) } }
     fun onThemeChange(theme: ThemeStyle) { viewModelScope.launch { repo.setTheme(theme) } }
     fun onAccentChange(accent: AccentColor) { viewModelScope.launch { repo.setAccent(accent) } }
+    fun onReminderStyleChange(style: ReminderStyle) { viewModelScope.launch { repo.setReminderStyle(style) } }
 }

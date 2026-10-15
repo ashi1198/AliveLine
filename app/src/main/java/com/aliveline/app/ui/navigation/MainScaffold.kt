@@ -55,6 +55,7 @@ import com.aliveline.app.feature.notes.NotesScreen
 import com.aliveline.app.feature.task.TaskDetailScreen
 import com.aliveline.app.ui.theme.AliveColors
 import com.aliveline.app.feature.reminders.RemindersScreen
+import com.aliveline.app.feature.sleep.SleepScreen
 private data class TabItem(val route: String, val label: String, val icon: ImageVector)
 
 private val tabs = listOf(
@@ -113,6 +114,7 @@ fun MainScaffold(onReplayOnboarding: () -> Unit) {
                     MapScreen(
                         onTaskClick = { navController.navigate(Routes.task(it)) },
                         onFocusStarted = { navController.navigate(Routes.FOCUS) },
+
                     )
                 }
                 composable(Routes.NOTES) {
@@ -133,6 +135,9 @@ fun MainScaffold(onReplayOnboarding: () -> Unit) {
                         onReplayOnboarding = onReplayOnboarding,
                     )
                 }
+                composable(Routes.SLEEP) {
+                    SleepScreen(onBack = { navController.popBackStack() })
+                }
                 composable(Routes.FOCUS) {
                     FocusScreen(onClose = { navController.popBackStack() })
                 }
@@ -145,6 +150,7 @@ fun MainScaffold(onReplayOnboarding: () -> Unit) {
                         onTaskClick = { navController.navigate(Routes.task(it)) },
                         onAddTask = { navController.navigate(Routes.create(it)) },
                         onFocusStarted = { navController.navigate(Routes.FOCUS) },
+                        onOpenSleep = { navController.navigate(Routes.SLEEP) },
                     )
                 }
                 composable(

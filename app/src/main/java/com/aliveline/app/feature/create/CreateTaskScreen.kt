@@ -232,7 +232,7 @@ fun CreateTaskScreen(
                         FilterChip(
                             selected = s.reminderStyle == ReminderStyle.NOTIFICATION,
                             onClick = { viewModel.onReminderStyleChange(ReminderStyle.NOTIFICATION) },
-                            label = { Text("Notification") },
+                            label = { Text("Gentle nudge") },
                         )
                         FilterChip(
                             selected = s.reminderStyle == ReminderStyle.ALARM,

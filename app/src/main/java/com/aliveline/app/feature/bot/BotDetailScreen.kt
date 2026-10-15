@@ -56,6 +56,7 @@ fun BotDetailScreen(
     onTaskClick: (Long) -> Unit,
     onAddTask: (BotType) -> Unit,
     onFocusStarted: () -> Unit,
+    onOpenSleep: () -> Unit,
     viewModel: BotDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -145,7 +146,15 @@ fun BotDetailScreen(
                 shape = RoundedCornerShape(18.dp),
             ) { Text("Start a focus session", color = accent) }
         }
-
+        if (state.bot == BotType.HEALTH) {
+            item(key = "sleep") {
+                OutlinedButton(
+                    onClick = onOpenSleep,
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(18.dp),
+                ) { Text("Sleep tracker", color = accent) }
+            }
+        }
         item(key = "todos_title") { SectionTitle("Needs") }
         if (state.todos.isEmpty()) {
             item(key = "todos_empty") { EmptyHint("Nothing waiting. Enjoy the calm!") }

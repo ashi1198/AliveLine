@@ -2,6 +2,7 @@ package com.aliveline.app.domain.repository
 
 import com.aliveline.app.domain.model.AccentColor
 import com.aliveline.app.domain.model.AppSettings
+import com.aliveline.app.domain.model.ReminderStyle
 import com.aliveline.app.domain.model.ThemeStyle
 import kotlinx.coroutines.flow.Flow
 
@@ -12,4 +13,5 @@ interface SettingsRepository {
     suspend fun setUserName(name: String)
     suspend fun setTheme(theme: ThemeStyle)
     suspend fun setAccent(accent: AccentColor)
+    suspend fun setReminderStyle(style: ReminderStyle)
 }
